@@ -2,6 +2,8 @@
 import express from 'express'; // This is our web server framework
 import fs from 'fs/promises'; // This is Node.js's built-in file system module, used to read our data.json file
 
+const dataPath = './data.json';
+
 // Initialize the Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,6 +11,11 @@ const PORT = process.env.PORT || 5000;
 // Middleware: This is a function that runs for every incoming request.
 // It allows Express to automatically parse JSON data from the body of a request.
 app.use(express.json());
+
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 
 // Enable CORS (Cross-Origin Resource Sharing)
 // This is important for the frontend to be able to make requests to the backend,
@@ -23,7 +30,7 @@ app.use((req, res, next) => {
 // A small utility function to save data back to the file
 const saveBooks = async (booksData) => {
     try {
-        await fs.writeFile('./data.json', JSON.stringify(booksData, null, 2), 'utf-8');
+        await fs.writeFile(dataPath, JSON.stringify(booksData, null, 2), 'utf-8');
     } catch (err) {
         console.error('Error writing to file:', err);
     }
@@ -32,7 +39,7 @@ const saveBooks = async (booksData) => {
 // GET /books: Get a list of all books
 app.get('/books', async (req, res) => {
     try {
-        const data = await fs.readFile('./data.json', 'utf-8');
+        const data = await fs.readFile(dataPath, 'utf-8');
         const books = JSON.parse(data);
         res.json(books);
     } catch (err) {
@@ -44,7 +51,7 @@ app.get('/books', async (req, res) => {
 // GET /books/:id: Get details for a single book
 app.get('/books/:id', async (req, res) => {
     try {
-        const data = await fs.readFile('./data.json', 'utf-8');
+        const data = await fs.readFile(dataPath, 'utf-8');
         const books = JSON.parse(data);
         const book = books.find(b => b.id == req.params.id);
         res.json(book || {});
@@ -57,7 +64,7 @@ app.get('/books/:id', async (req, res) => {
 // POST /books/:id/reviews: Add a new review to a book
 app.post('/books/:id/reviews', async (req, res) => {
     try {
-        const data = await fs.readFile('./data.json', 'utf-8');
+        const data = await fs.readFile(dataPath, 'utf-8');
         const books = JSON.parse(data);
         const book = books.find(b => b.id == req.params.id);
         if (!book) {
@@ -87,7 +94,7 @@ app.post('/books/:id/reviews', async (req, res) => {
 // PUT /books/:id/reviews/:reviewId: Update an existing review
 app.put('/books/:id/reviews/:reviewId', async (req, res) => {
     try {
-        const data = await fs.readFile('./data.json', 'utf-8');
+        const data = await fs.readFile(dataPath, 'utf-8');
         const books = JSON.parse(data);
         const book = books.find(b => b.id == req.params.id);
         if (!book) {
@@ -115,7 +122,7 @@ app.put('/books/:id/reviews/:reviewId', async (req, res) => {
 // DELETE /books/:id/reviews/:reviewId: Delete a review
 app.delete('/books/:id/reviews/:reviewId', async (req, res) => {
     try {
-        const data = await fs.readFile('./data.json', 'utf-8');
+        const data = await fs.readFile(dataPath, 'utf-8');
         let books = JSON.parse(data);
         const book = books.find(b => b.id == req.params.id);
         if (!book) {
@@ -140,3 +147,5 @@ app.delete('/books/:id/reviews/:reviewId', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Backend running on port ${PORT}`);
 });
+
+export default app;
