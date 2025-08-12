@@ -7,9 +7,10 @@ function App() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/books')
+    fetch('http://127.0.0.1:5000/books')
       .then(res => res.json())
-      .then(data => setBooks(data));
+      .then(data => setBooks(data))
+      .catch(error => console.error('Error fetching books:', error));
   }, []);
 
   return (
